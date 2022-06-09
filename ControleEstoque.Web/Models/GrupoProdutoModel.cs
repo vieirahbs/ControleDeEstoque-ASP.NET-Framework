@@ -10,7 +10,5 @@ namespace ControleEstoque.Web.Models
         public int Id { get; set; }
         public string Nome { get; set; }
         public bool Ativo { get; set; }
-
-        public List<GrupoProdutoModel> Lista = new List<GrupoProdutoModel>();
     }
 }
