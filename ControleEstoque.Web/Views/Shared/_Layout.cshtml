@@ -1,5 +1,4 @@
-﻿@model ControleEstoque.Web.Models.LoginViewModel
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 <html>
 <head>
@@ -21,7 +20,8 @@
                 @Html.ActionLink("Controle de estoque", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
             </div>
             <div class="navbar-collapse ">
-                @if (Request.IsAuthenticated)@*Valida se o usuário está logado*@
+                @*Valida se o usuário está logado*@
+                @if (Request.IsAuthenticated)
                 {
                     <ul class="nav navbar-nav">
                         @*Determina que a lista (ul) fique lateralizada*@
@@ -86,16 +86,17 @@
 
 
                     </ul>
-                    <ul class="nav navbar-nav navbar-right">
-                        <li>@Html.ActionLink("Sobre", "Sobre", "Home")</li>
-                        <li><a href="#">Olá @User.Identity.Name</a></li>
-                        @using (Html.BeginForm("Logout", "Conta", FormMethod.Post, new { id = "LogoutForm" }))
-                        {
+                    using (Html.BeginForm("Logout", "Conta", FormMethod.Post, new { id = "LogoutForm" }))
+                    {
+                        <ul class="nav navbar-nav navbar-right">
+                            <li>@Html.ActionLink("Sobre", "Sobre", "Home")</li>
+                            <li><a href="#">Olá @User.Identity.Name</a></li>
+
                             <li>
                                 <a href="javascript:document.getElementById('LogoutForm').submit()">Sair</a>
                             </li>
-                        }
-                    </ul>
+                        </ul>
+                    }
                 }
                 else
                 {

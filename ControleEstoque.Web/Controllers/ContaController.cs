@@ -27,7 +27,7 @@ namespace ControleEstoque.Web.Controllers
                 return View(login);
             }
 
-            bool achou = (login.Usuario == "as" && login.Senha == "1234");
+            bool achou = (UsuarioModel.ValidarUsuario(login.Usuario, login.Senha));
             if (achou)
             {
                 //Salva os dados nos cookies
