@@ -34,8 +34,7 @@ textarea {
 }
 
 /*Classe criada para deixar o #modal_cadastro invisível ao
-    abrir a View GrupoProduto
-*/
+    abrir a View GrupoProduto*/
 .invisivel {
     display: none;
 }

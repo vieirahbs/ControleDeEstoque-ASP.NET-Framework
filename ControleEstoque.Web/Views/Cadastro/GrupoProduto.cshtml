@@ -76,18 +76,19 @@
         </div>
     </section>
 </div>
+@Html.Hidden("id_cadastro")
 <div id="modal_cadastro" class="form-horizontal invisivel" role="dialog">
     <fieldset>
         <div class="row">
             <div class="form-group">
                 @Html.Label("lbl_nome", "Nome", new { @class = "col-md-3 control-label" })
-                <div>
+                <div data-nome="txt_nome">
                     @Html.TextBox("txt_nome", null, new { @class = "form-control" })
                 </div>
             </div>
             <div class="form-group">
                 @Html.Label("cbx_ativo", "Ativo", new { @class = "col-md-3 control-label" })
-                <div>
+                <div data-nome="cbx_ativo">
                     @Html.CheckBox("cbx_ativo")
                 </div>
             </div>
@@ -97,7 +98,7 @@
                 <a id="btn_sair" class="btn btn-default" role="button" data-dismiss="modal">
                     <i class="glyphicon glyphicon-remove"></i> Sair
                 </a>
-                <a id="btn_confirmar" class="btn btn-primary" role="button">
+                <a id="btn_salvar" class="btn btn-primary" role="button">
                     <i class="glyphicon glyphicon-ok"></i> Salvar
                 </a>
             </div>
@@ -107,7 +108,7 @@
 @section Scripts{
     <script>
         function abrir_form(dados) {
-
+            $('#id_cadastro').val(dados.Id);
             $('#txt_nome').val(dados.Nome);
             $('#cbx_ativo').prop('checked', dados.Ativo);
 
@@ -127,15 +128,33 @@
                 });
         }
 
+        function criar_linha_grid(dados) {
+            var ret =
+                '<tr data-id=' + dados.Id + '>' +
+                '<td>' + dados.Nome + '</td>' +
+                '<td>' + (dados.Ativo ? 'Sim' : 'Não') + '</td>' +
+                '<td>' +
+                '<a class="btn btn-primary btn-alterar" role="button">' +
+                   '<i class="glyphicon glyphicon-pencil"></i> Alterar' +
+                '</a> ' +
+                '<a class="btn btn-danger btn-excluir" role="button">' +
+                   '<i class="glyphicon glyphicon-trash"></i> Excluir' +
+                '</a>' +
+                '</td>' +
+                '</tr>';
+
+            return ret;
+        }
+
         $(document)     //# para identificar o nome dado ao botão
             .on('click', '#btn_incluir', function () {
-                abrir_form({Id: 0, Nome: '', Ativo: true});
+                abrir_form({ Id: 0, Nome: '', Ativo: true });
 
             })          //. para identificar o nome da classe, por haver mais de um botão "alterar"
             .on('click', '.btn-alterar', function () {
                 var btn = $(this),
                     id = btn.closest('tr').attr('data-id'),
-                    url = '@Url.Action("RecuperarGrupoProduto", "Cadastro")';
+                    url = '@Url.Action("RecuperaGrupoProduto", "Cadastro")';
                     param = { 'id': id };
 
                 $.post(url, param, function (response) {
@@ -146,7 +165,68 @@
 
             })//. para identificar o nome da classe, por haver mais de um botão "excluir"
             .on('click', '.btn-excluir', function () {
-                alert('Excluir');
+                var btn = $(this),
+                    tr = btn.closest('tr'),
+                    id = tr.attr('data-id'),
+                    url = '@Url.Action("ExcluirGrupoProduto", "Cadastro")';
+                    param = { 'id': id };
+
+                bootbox.confirm({
+                    message: "Tem certeza que deseja excluir esse grupo de produto",
+                    buttons: {
+                        confirm: {
+                            label: 'Sim',
+                            className: 'btn-success'
+                        },
+                        cancel: {
+                            label: 'Não',
+                            className: 'btn-danger'
+                        }
+                    },
+                    callback: function (result) {
+                        if (result) {
+                            $.post(url, param, function (response) {
+                                if (response) {
+                                    tr.remove();
+                                    alert('Grupo de produtos excluido com sucesso.');
+                                }
+                            })
+                        }
+                        console.log('This was logged in the callback: ' + result);
+                    }
+                });
+            })
+            .on('click', '#btn_salvar', function () {
+                var btn = $(this),
+                    nome = btn.closest('div').attr('data-nome'),
+                    ativo = btn.closest('div').attr('data-ativo')
+                    url = '@Url.Action("AdicionaGrupoProduto", "Cadastro")';
+                    param = {
+                        Id: $('#id_cadastro').val(),
+                        Nome: $('#txt_nome').val(),
+                        Ativo: $('#cbx_ativo').prop('checked')
+                            };
+
+                $.post(url, param, function (response) {
+                    if (response) {
+                        if (param.Id == 0) {
+                            var table = $('#grid_cadastro').find('tbody'),
+                                linha = criar_linha_grid(response);
+
+                            table.append(linha);
+                            alert("Grupo de produto adicionado com sucesso!");
+                        }
+                        else{//obtém a linha do grid_cadastro onde o data-id é igual a param.Id
+                            var linha = $('#grid_cadastro').find('tr[data-id=' + param.Id + ']').find('td');
+                            linha//Na coluna 0 ele add o Nome e na um o Status de Ativo:
+                                .eq(0).html(param.Nome).end()
+                                .eq(1).html(param.Ativo ? 'Sim' : 'Não');
+                            alert("Grupo de produto atualizado com sucesso!");
+                        }
+                        $('#modal_cadastro').parents('.bootbox').modal('hide');
+                    }
+                })
+
             })
     </script>
 }

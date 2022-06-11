@@ -24,9 +24,45 @@ namespace ControleEstoque.Web.Controllers
 
         [HttpPost]
         [Authorize]
-        public ActionResult RecuperarGrupoProduto(int id)
+        public ActionResult RecuperaGrupoProduto(int id)
         {
             return Json(_listaGrupoProduto.Find(x => x.Id == id));
+        }
+
+        [HttpPost]
+        [Authorize]
+        public ActionResult AdicionaGrupoProduto(GrupoProdutoModel grupo)
+        {
+            GrupoProdutoModel registroDB = _listaGrupoProduto.Find(x => x.Id == grupo.Id);
+            if (registroDB == null)
+            {
+                registroDB = grupo;
+                registroDB.Id = _listaGrupoProduto.Max(x => x.Id) + 1;
+                _listaGrupoProduto.Add(registroDB);
+            }
+            else
+            {
+                registroDB.Nome = grupo.Nome;
+                registroDB.Ativo = grupo.Ativo;
+            }
+            return Json(registroDB);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public ActionResult ExcluirGrupoProduto(int id)
+        {
+            bool ret = false;
+
+            GrupoProdutoModel registroBD = _listaGrupoProduto.Find(x => x.Id == id);
+
+            if (registroBD != null)
+            {
+                _listaGrupoProduto.Remove(registroBD);
+                ret = true;
+            }
+
+            return Json(ret);
         }
 
         [Authorize]
