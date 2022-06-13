@@ -76,8 +76,9 @@
         </div>
     </section>
 </div>
-@Html.Hidden("id_cadastro")
+@Html.Hidden("id_grupo")
 <div id="modal_cadastro" class="form-horizontal invisivel" role="dialog">
+    <div id="msg_mensagem_aviso" class="text-danger invisivel"></div>
     <fieldset>
         <div class="row">
             <div class="form-group">
@@ -103,16 +104,24 @@
                 </a>
             </div>
         </div>
+        <div id="msg_aviso" class="alert alert-warning invisivel">Preencha os campos acima.</div>
+        <div id="msg_erro" class="alert alert-danger invisivel">Ocorreu um erro.</div>
     </fieldset>
 </div>
 @section Scripts{
-    <script>
+    @Scripts.Render("~/bundles/jqueryval")
+<script>
         function abrir_form(dados) {
-            $('#id_cadastro').val(dados.Id);
+            $('#id_grupo').val(dados.Id);
             $('#txt_nome').val(dados.Nome);
             $('#cbx_ativo').prop('checked', dados.Ativo);
 
             var modal_cadastro = $('#modal_cadastro');
+
+            $('#msg_mensagem_aviso').empty;
+            $('#msg_mensagem_aviso').hide();
+            $('#msg_erro').hide();
+            $('#msg_aviso').hide();
 
             bootbox.dialog({
                     title: '@ViewBag.Title',
@@ -128,7 +137,7 @@
                 });
         }
 
-        function criar_linha_grid(dados) {
+        function criar_linha_grid(dados) {//Método para criar uma nova linha ao adicionar um novo grupo
             var ret =
                 '<tr data-id=' + dados.Id + '>' +
                 '<td>' + dados.Nome + '</td>' +
@@ -163,11 +172,11 @@
                     }
                 })
 
-            })//. para identificar o nome da classe, por haver mais de um botão "excluir"
+            })
+                        //. para identificar o nome da classe, por haver mais de um botão "excluir"
             .on('click', '.btn-excluir', function () {
                 var btn = $(this),
-                    tr = btn.closest('tr'),
-                    id = tr.attr('data-id'),
+                    id = btn.closest('tr').attr('data-id'),
                     url = '@Url.Action("ExcluirGrupoProduto", "Cadastro")';
                     param = { 'id': id };
 
@@ -187,7 +196,7 @@
                         if (result) {
                             $.post(url, param, function (response) {
                                 if (response) {
-                                    tr.remove();
+                                    btn.closest('tr').remove();
                                     alert('Grupo de produtos excluido com sucesso.');
                                 }
                             })
@@ -197,21 +206,19 @@
                 });
             })
             .on('click', '#btn_salvar', function () {
-                var btn = $(this),
-                    nome = btn.closest('div').attr('data-nome'),
-                    ativo = btn.closest('div').attr('data-ativo')
-                    url = '@Url.Action("AdicionaGrupoProduto", "Cadastro")';
+                var url = '@Url.Action("AdicionaGrupoProduto", "Cadastro")';
                     param = {
-                        Id: $('#id_cadastro').val(),
+                        Id: $('#id_grupo').val(),
                         Nome: $('#txt_nome').val(),
                         Ativo: $('#cbx_ativo').prop('checked')
                             };
 
                 $.post(url, param, function (response) {
-                    if (response) {
+                    if (response.Resultado == "Ok") {
                         if (param.Id == 0) {
+                            param.Id = response.IdSalvo
                             var table = $('#grid_cadastro').find('tbody'),
-                                linha = criar_linha_grid(response);
+                                linha = criar_linha_grid(param);
 
                             table.append(linha);
                             alert("Grupo de produto adicionado com sucesso!");
@@ -225,8 +232,27 @@
                         }
                         $('#modal_cadastro').parents('.bootbox').modal('hide');
                     }
+                    else if (response.Resultado == "Erro") {
+                        $('#msg_mensagem_aviso').hide();
+                        $('#msg_aviso').hide();
+                        $('#msg_erro').show();
+                    }
+                    else if (response.Resultado == "Aviso") {
+                        $('#msg_mensagem_aviso').html(formatar_mensagem_aviso(response.Mensagens));
+                        $('#msg_mensagem_aviso').show();
+                        $('#msg_erro').hide();
+                        $('#msg_aviso').show();
+                    }
                 })
 
             })
-    </script>
+    function formatar_mensagem_aviso(mesagens) {
+        var ret = '';
+
+        for (var i = 0; i < mesagens.length; i++) {
+            ret += '<li>' + mesagens[i] + '</li>';
+        }
+        return '<ul>' + ret + '</ul>';
+    }
+</script>
 }

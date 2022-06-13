@@ -19,50 +19,59 @@ namespace ControleEstoque.Web.Controllers
         [Authorize]
         public ActionResult GrupoProduto()
         {
-            return View(_listaGrupoProduto);
+            return View(GrupoProdutoModel.RecuperarLista());
         }
 
         [HttpPost]
         [Authorize]
         public ActionResult RecuperaGrupoProduto(int id)
         {
-            return Json(_listaGrupoProduto.Find(x => x.Id == id));
+            return Json(GrupoProdutoModel.RecuperarGrupoProduto(id));
         }
 
         [HttpPost]
         [Authorize]
-        public ActionResult AdicionaGrupoProduto(GrupoProdutoModel grupo)
+        public ActionResult AdicionaGrupoProduto(GrupoProdutoModel grupoProduto)
         {
-            GrupoProdutoModel registroDB = _listaGrupoProduto.Find(x => x.Id == grupo.Id);
-            if (registroDB == null)
+            string resultado = "Ok";
+            List<string> mensagens = new List<string>();
+            string idSalvo = string.Empty;
+
+            if (!ModelState.IsValid)
             {
-                registroDB = grupo;
-                registroDB.Id = _listaGrupoProduto.Max(x => x.Id) + 1;
-                _listaGrupoProduto.Add(registroDB);
+                resultado = "Aviso";
+                mensagens = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage).ToList();
             }
             else
             {
-                registroDB.Nome = grupo.Nome;
-                registroDB.Ativo = grupo.Ativo;
+                try
+                {
+                    var id = grupoProduto.CreateGrupoProduto();
+
+                    if (id > 0)
+                    {
+                        idSalvo = id.ToString();
+                    }
+                    else
+                    {
+                        resultado = "Erro";
+                    }
+                    
+                }
+                catch (Exception ex)
+                {
+                    resultado = "Erro";
+                }
             }
-            return Json(registroDB);
+            //objeto anônimo
+            return Json(new { Resultado = resultado, Mensagens = mensagens, IdSalvo = idSalvo });
         }
 
         [HttpPost]
         [Authorize]
         public ActionResult ExcluirGrupoProduto(int id)
         {
-            bool ret = false;
-
-            GrupoProdutoModel registroBD = _listaGrupoProduto.Find(x => x.Id == id);
-
-            if (registroBD != null)
-            {
-                _listaGrupoProduto.Remove(registroBD);
-                ret = true;
-            }
-
-            return Json(ret);
+            return Json(GrupoProdutoModel.DeleteGrupoProduto(id));
         }
 
         [Authorize]

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
@@ -13,8 +14,7 @@ namespace ControleEstoque.Web.Models
             bool ret = false;
             using (var conexao = new SqlConnection())
             {
-                conexao.ConnectionString = "Data Source=DESKTOP-QINDOBS;Initial Catalog=CONTROLE_ESTOQUE;" +
-                    "Integrated Security=True;Connect Timeout=30";
+                conexao.ConnectionString = ConfigurationManager.ConnectionStrings["principal"].ConnectionString;
                 conexao.Open();
                 using (var comando = new SqlCommand())
                 {
