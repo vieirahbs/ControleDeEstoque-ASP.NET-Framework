@@ -78,7 +78,7 @@
 </div>
 @Html.Hidden("id_grupo")
 <div id="modal_cadastro" class="form-horizontal invisivel" role="dialog">
-    <div id="msg_mensagem_aviso" class="text-danger invisivel"></div>
+    <div id="msg_validacao" class="text-danger invisivel"></div>
     <fieldset>
         <div class="row">
             <div class="form-group">
@@ -118,8 +118,8 @@
 
             var modal_cadastro = $('#modal_cadastro');
 
-            $('#msg_mensagem_aviso').empty;
-            $('#msg_mensagem_aviso').hide();
+            $('#msg_validacao').empty;
+            $('#msg_validacao').hide();
             $('#msg_erro').hide();
             $('#msg_aviso').hide();
 
@@ -233,20 +233,20 @@
                         $('#modal_cadastro').parents('.bootbox').modal('hide');
                     }
                     else if (response.Resultado == "Erro") {
-                        $('#msg_mensagem_aviso').hide();
+                        $('#msg_validacao').hide();
                         $('#msg_aviso').hide();
                         $('#msg_erro').show();
                     }
                     else if (response.Resultado == "Aviso") {
-                        $('#msg_mensagem_aviso').html(formatar_mensagem_aviso(response.Mensagens));
-                        $('#msg_mensagem_aviso').show();
+                        $('#msg_validacao').html(formatar_msg_validacao(response.Mensagens));
+                        $('#msg_validacao').show();
                         $('#msg_erro').hide();
                         $('#msg_aviso').show();
                     }
                 })
 
             })
-    function formatar_mensagem_aviso(mesagens) {
+    function formatar_msg_validacao(mesagens) {
         var ret = '';
 
         for (var i = 0; i < mesagens.length; i++) {

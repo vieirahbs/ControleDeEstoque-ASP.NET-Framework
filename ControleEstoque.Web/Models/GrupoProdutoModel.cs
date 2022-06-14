@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
@@ -17,21 +18,21 @@ namespace ControleEstoque.Web.Models
 
         public static List<GrupoProdutoModel> RecuperarLista()
         {
-            var ret = new List<GrupoProdutoModel>();
+            List<GrupoProdutoModel> retorno = new List<GrupoProdutoModel>();
 
-            using (var conexao = new SqlConnection())
+            using (SqlConnection conexao = new SqlConnection())
             {
                 conexao.ConnectionString = ConfigurationManager.ConnectionStrings["principal"].ConnectionString;
                 conexao.Open();
-                using (var comando = new SqlCommand())
+                using (SqlCommand comando = new SqlCommand())
                 {
                     comando.Connection = conexao;
                     comando.CommandText = "select * from TB_GRUPO_PRODUTO order by GP_NOME";
-                    var reader = comando.ExecuteReader();
+                    SqlDataReader reader = comando.ExecuteReader();
                     while (reader.Read())
                     {
-                        ret.Add(new Models.GrupoProdutoModel
-                        {
+                        retorno.Add(new GrupoProdutoModel
+                        {   //O reader retorna um object, por isso é necessário fazer a conversão
                             Id = (int)reader["ID"],
                             Nome = (string)reader["GP_NOME"],
                             Ativo = (bool)reader["GP_ATIVO"],
@@ -39,26 +40,29 @@ namespace ControleEstoque.Web.Models
                     }
                 }
             }
-            return ret;
+            return retorno;
         }
 
         public static GrupoProdutoModel RecuperarGrupoProduto(int id)
         {
-            GrupoProdutoModel ret = null;
+            GrupoProdutoModel retorno = null;
 
-            using (var conexao = new SqlConnection())
+            using (SqlConnection conexao = new SqlConnection())
             {
                 conexao.ConnectionString = ConfigurationManager.ConnectionStrings["principal"].ConnectionString;
                 conexao.Open();
-                using (var comando = new SqlCommand())
+                using (SqlCommand comando = new SqlCommand())
                 {
                     comando.Connection = conexao;
-                    comando.CommandText = $"select * from TB_GRUPO_PRODUTO where ID = {id}";
-                    var reader = comando.ExecuteReader();
+                    comando.CommandText = "select * from TB_GRUPO_PRODUTO where ID = @ID";
+
+                    comando.Parameters.Add("@ID", SqlDbType.VarChar).Value = id;
+
+                    SqlDataReader reader = comando.ExecuteReader();
 
                     if (reader.Read())
                     {
-                        ret = new GrupoProdutoModel
+                        retorno = new GrupoProdutoModel
                         {
                             Id = (int)reader["ID"],
                             Nome = (string)reader["GP_NOME"],
@@ -67,35 +71,36 @@ namespace ControleEstoque.Web.Models
                     }
                 }
             }
-            return ret;
+            return retorno;
         }
 
         public static bool DeleteGrupoProduto(int id)
         {
-            bool ret = false;
+            bool retorno = false;
 
             if (RecuperarGrupoProduto(id) != null)
             {
-                using (var conexao = new SqlConnection())
+                using (SqlConnection conexao = new SqlConnection())
                 {
                     conexao.ConnectionString = ConfigurationManager.ConnectionStrings["principal"].ConnectionString;
                     conexao.Open();
-                    using (var comando = new SqlCommand())
+                    using (SqlCommand comando = new SqlCommand())
                     {
                         comando.Connection = conexao;
-                        comando.CommandText = $"delete from TB_GRUPO_PRODUTO where ID = {id}";
-                        ret = (comando.ExecuteNonQuery() > 0);
+                        comando.CommandText = "delete from TB_GRUPO_PRODUTO where ID = @ID";
+                        comando.Parameters.Add("@ID", SqlDbType.VarChar).Value = id;
+
+                        retorno = (comando.ExecuteNonQuery() > 0);
                     }
                 }
             }
-            return ret;
+            return retorno;
         }
-
 
         public int CreateGrupoProduto()
         {
-            var ret = 0;
-            var idGrupo = RecuperarGrupoProduto(this.Id);
+            int retorno = 0;
+            GrupoProdutoModel grupoProduto = RecuperarGrupoProduto(this.Id);
             using (var conexao = new SqlConnection())
             {
                 conexao.ConnectionString = ConfigurationManager.ConnectionStrings["principal"].ConnectionString;
@@ -105,28 +110,32 @@ namespace ControleEstoque.Web.Models
                 {
                     comando.Connection = conexao;
 
-                    if (idGrupo == null)
+                    if (grupoProduto == null)
                     {
-                        comando.CommandText = string.Format("insert into TB_GRUPO_PRODUTO " +
-                            "values ('{0}', {1}); " +
-                            "select convert(int, scope_identity())", this.Nome, this.Ativo ? 1 : 0);
-                        ret = (int)comando.ExecuteScalar();
+                        comando.CommandText = "insert into TB_GRUPO_PRODUTO values (@GP_NOME, @GP_ATIVO);" +
+                            "select convert(int, scope_identity())";
+                        comando.Parameters.Add("@GP_NOME", SqlDbType.VarChar).Value = this.Nome;
+                        comando.Parameters.Add("@GP_ATIVO", SqlDbType.Bit).Value = this.Ativo ? 1 : 0;
+                        
+                        retorno = (int)comando.ExecuteScalar();
                     }
                     else
                     {
+                        comando.CommandText = "update TB_GRUPO_PRODUTO set GP_NOME = @Nome, GP_ATIVO = @Ativo " +
+                            "where ID = @ID";
+                        comando.Parameters.Add("@Nome", SqlDbType.VarChar).Value = this.Nome;
+                        comando.Parameters.Add("@Ativo", SqlDbType.Bit).Value = this.Ativo ? 1 : 0;
+                        comando.Parameters.Add("@ID", SqlDbType.Int).Value = this.Id;
 
-                        comando.CommandText = string.Format(
-                            "update TB_GRUPO_PRODUTO set GP_NOME = '{0}', GP_ATIVO = {1} where ID = {2}; ",
-                            this.Nome, this.Ativo ? 1 : 0, this.Id);
                         //Executa e retorna um inteiro
                         if (comando.ExecuteNonQuery() > 0)
                         {
-                            ret = this.Id;
+                            retorno = this.Id;
                         }
                     }
                 }
             }
-            return ret;
+            return retorno;
         }
     }
 }

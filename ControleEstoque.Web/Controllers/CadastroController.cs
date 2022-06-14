@@ -9,13 +9,6 @@ namespace ControleEstoque.Web.Controllers
 {
     public class CadastroController : Controller
     {
-        public static List<GrupoProdutoModel> _listaGrupoProduto = new List<GrupoProdutoModel>()
-        {
-            new GrupoProdutoModel() { Id=1, Nome="Livros", Ativo=true },
-            new GrupoProdutoModel() { Id=2, Nome="Mouses", Ativo=true },
-            new GrupoProdutoModel() { Id=3, Nome="Monitores", Ativo=false }
-        };
-
         [Authorize]
         public ActionResult GrupoProduto()
         {
@@ -46,7 +39,7 @@ namespace ControleEstoque.Web.Controllers
             {
                 try
                 {
-                    var id = grupoProduto.CreateGrupoProduto();
+                    int id = grupoProduto.CreateGrupoProduto();
 
                     if (id > 0)
                     {
@@ -58,7 +51,7 @@ namespace ControleEstoque.Web.Controllers
                     }
                     
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     resultado = "Erro";
                 }
