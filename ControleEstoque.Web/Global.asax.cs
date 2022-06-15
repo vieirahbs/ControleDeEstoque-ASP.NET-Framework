@@ -17,5 +17,27 @@ namespace ControleEstoque.Web
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
+
+        //Para evitar que caracteres especiais sejam ditados no textbox:
+        void Application_Error(object sender, EventArgs e)
+        {
+            Exception ex = Server.GetLastError();
+
+            if (ex is HttpRequestValidationException)
+            {
+                Response.Clear();
+                Response.StatusCode = 200;
+                Response.ContentType = "application/json";
+                Response.Write("{ \"Resultado\":\"Aviso\",\"Mensagens\":[\"Somente texto sem caracteres " +
+                    "especiais pode ser enviado.\"],\"IdSalvo\":\"\"}");
+                Response.End();
+            }
+            else if (ex is HttpAntiForgeryException)
+            {
+                Response.Clear();
+                Response.StatusCode = 200;
+                Response.End();
+            }
+        }
     }
 }

@@ -97,7 +97,7 @@ namespace ControleEstoque.Web.Models
             return retorno;
         }
 
-        public int CreateGrupoProduto()
+        public int CreateUpdateGrupoProduto()
         {
             int retorno = 0;
             GrupoProdutoModel grupoProduto = RecuperarGrupoProduto(this.Id);

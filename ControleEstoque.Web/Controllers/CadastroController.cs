@@ -17,6 +17,7 @@ namespace ControleEstoque.Web.Controllers
 
         [HttpPost]
         [Authorize]
+        [ValidateAntiForgeryToken]
         public ActionResult RecuperaGrupoProduto(int id)
         {
             return Json(GrupoProdutoModel.RecuperarGrupoProduto(id));
@@ -24,6 +25,7 @@ namespace ControleEstoque.Web.Controllers
 
         [HttpPost]
         [Authorize]
+        [ValidateAntiForgeryToken]
         public ActionResult AdicionaGrupoProduto(GrupoProdutoModel grupoProduto)
         {
             string resultado = "Ok";
@@ -39,7 +41,7 @@ namespace ControleEstoque.Web.Controllers
             {
                 try
                 {
-                    int id = grupoProduto.CreateGrupoProduto();
+                    int id = grupoProduto.CreateUpdateGrupoProduto();
 
                     if (id > 0)
                     {
@@ -62,6 +64,7 @@ namespace ControleEstoque.Web.Controllers
 
         [HttpPost]
         [Authorize]
+        [ValidateAntiForgeryToken]
         public ActionResult ExcluirGrupoProduto(int id)
         {
             return Json(GrupoProdutoModel.DeleteGrupoProduto(id));

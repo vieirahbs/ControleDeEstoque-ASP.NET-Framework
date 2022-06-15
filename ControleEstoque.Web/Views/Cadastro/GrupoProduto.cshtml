@@ -80,6 +80,7 @@
 <div id="modal_cadastro" class="form-horizontal invisivel" role="dialog">
     <div id="msg_validacao" class="text-danger invisivel"></div>
     <fieldset>
+        @Html.AntiForgeryToken()
         <div class="row">
             <div class="form-group">
                 @Html.Label("lbl_nome", "Nome", new { @class = "col-md-3 control-label" })
@@ -110,7 +111,12 @@
 </div>
 @section Scripts{
     @Scripts.Render("~/bundles/jqueryval")
-<script>
+    <script>
+        function add_antiforgery_token(data) {
+            data.__RequestVerificationToken = $('[name=__RequestVerificationToken]').val();
+            return data;
+        }
+
         function abrir_form(dados) {
             $('#id_grupo').val(dados.Id);
             $('#txt_nome').val(dados.Nome);
@@ -166,7 +172,7 @@
                     url = '@Url.Action("RecuperaGrupoProduto", "Cadastro")';
                     param = { 'id': id };
 
-                $.post(url, param, function (response) {
+                $.post(url, add_antiforgery_token(param), function (response) {
                     if (response) {
                         abrir_form(response);
                     }
@@ -194,7 +200,7 @@
                     },
                     callback: function (result) {
                         if (result) {
-                            $.post(url, param, function (response) {
+                            $.post(url, add_antiforgery_token(param), function (response) {
                                 if (response) {
                                     btn.closest('tr').remove();
                                     alert('Grupo de produtos excluido com sucesso.');
@@ -213,7 +219,7 @@
                         Ativo: $('#cbx_ativo').prop('checked')
                             };
 
-                $.post(url, param, function (response) {
+                $.post(url, add_antiforgery_token(param), function (response) {
                     if (response.Resultado == "Ok") {
                         if (param.Id == 0) {
                             param.Id = response.IdSalvo
@@ -254,5 +260,5 @@
         }
         return '<ul>' + ret + '</ul>';
     }
-</script>
+    </script>
 }
